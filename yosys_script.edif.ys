@@ -1,0 +1,2 @@
+read_verilog hw/gen/MyTopLevelForYosys.v
+synth_xilinx -family xc7 -abc9 -edif hw/gen/MyTopLevelForYosys.edif -top MyTopLevelForYosys
