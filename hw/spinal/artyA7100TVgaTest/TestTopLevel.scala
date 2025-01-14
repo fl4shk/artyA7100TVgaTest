@@ -263,6 +263,7 @@ case class MyTopLevel(
   //def clkRate = 126.0 MHz   // 640x360@60 (7x pixel clock)
   //def clkRate = 144.0 MHz   // 640x360@60 (8x pixel clock)
   def coreClkRate = (
+    //50.0 MHz
     //125.0 MHz,
     //140.0 MHz
     //118.25 MHz    // 1600x900@60 (1x pixel clock)
@@ -292,13 +293,23 @@ case class MyTopLevel(
   //  ),
   //)
   //--------
-  val vgaTimingInfo = (
+  val tempVgaTimingInfo = (
     //LcvVgaTimingInfoMap.map("640x480@60")
     //LcvVgaTimingInfoMap.map("320x240@60")
     //LcvVgaTimingInfoMap.map("640x360@60")
     //LcvVgaTimingInfoMap.map("400x225@60")
     //LcvVgaTimingInfoMap.map("1600x900@60")
     LcvVgaTimingInfoMap.map("1920x1080@60")
+  )
+  val vgaTimingInfo = (
+    //LcvVgaTimingInfo(
+    //  pixelClk=tempVgaTimingInfo.pixelClk,
+    //  htiming=tempVgaTimingInfo.htiming,
+    //  vtiming=tempVgaTimingInfo.vtiming,
+    //  hPolarity=true,
+    //  vPolarity=true,
+    //)
+    tempVgaTimingInfo
   )
   def vgaClkRate = (
     coreClkRate
@@ -349,6 +360,8 @@ case class MyTopLevel(
   def gpu2dPhysFbSize2dScale = ElabVec2[Int](
     //x=1,
     //y=1,
+    //x=2,
+    //y=2,
     //x=4,
     //y=4,
     x=5,
@@ -461,12 +474,13 @@ case class MyTopLevel(
         ////  * vgaTimingInfo.fbSize2d.y
         ////)
         /// (1 << (gpu2dBgTileSize2dPow.x + gpu2dBgTileSize2dPow.y))
-        //256
-        (
-          gpu2dIntnlFbSize2d.x * gpu2dIntnlFbSize2d.y
-        ) / (
-          1 << (gpu2dBgTileSize2dPow.x + gpu2dBgTileSize2dPow.y)
-        )
+        //16
+        256
+        //(
+        //  gpu2dIntnlFbSize2d.x * gpu2dIntnlFbSize2d.y
+        //) / (
+        //  1 << (gpu2dBgTileSize2dPow.x + gpu2dBgTileSize2dPow.y)
+        //)
       )
       //Some(
       //  8 * 8
@@ -1046,9 +1060,16 @@ case class MyTopLevel(
       gpu2dParams=gpu2dParams,
       ctrlFifoDepth=clkCtrl.vgaCtrlFifoDepth,
       optRawSnesButtons=false,
-      dbgPipeMemRmw=false
+      dbgPipeMemRmw=false,
+      vivadoDebug=(
+        false
+        //true
+      ),
     )
     io.snesCtrl <> myDut.io.snesCtrl
+    myDut.gpu2d.io.pop.physPosInfo.pos.addAttribute(
+      "MARK_DEBUG", "TRUE"
+    )
 
     for (idx <- 0 to io.outpVgaColR.size - 1) {
       //io.outpVgaColR(idx) := ctrlIo.phys.col.r(idx)

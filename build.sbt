@@ -1,6 +1,7 @@
 ThisBuild / version := "1.0"
 ThisBuild / scalaVersion := "2.12.16"
 ThisBuild / organization := "org.example"
+ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
 
 val spinalVersion = "1.10.1"
 val spinalCore = "com.github.spinalhdl" %% "spinalhdl-core" % spinalVersion
