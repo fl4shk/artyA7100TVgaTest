@@ -13,6 +13,7 @@ import libcheesevoyage._
 import libcheesevoyage.general._
 import libcheesevoyage.gfx._
 import libcheesevoyage.hwdev._
+import libsnowhouse._
 import scala.collection.mutable.ArrayBuffer
 //import libcheesevoyage.math.trySpinal._
 
@@ -68,7 +69,7 @@ case class my_core_clk_wiz() extends BlackBox {
     //val reset = in Bool()
     val clk_out1_0 = out Bool()
     //val clk_out2_0 = out Bool()
-    val locked_0 = out Bool()
+    //val locked_0 = out Bool()
   }
   noIoPrefix()
 }
@@ -156,7 +157,7 @@ case class MyTopLevelIo(
   //val snesCtrlData = in Bool()
   //--------
   val snesCtrl = (optIncludeSnesCtrl) generate (
-    SnesCtrlIo()
+    master(SnesCtrlIo())
   )
   //--------
 
@@ -197,6 +198,8 @@ case class MyTopLevelIo(
   //  outpLedArr += out Bool()
   //  outpLedArr.last.setName(f"io_led$idx")
   //}
+  val ja = out UInt(8 bits)
+  val jb = out UInt(8 bits)
 
   //val led0_b = out Bool()
   //val led0_g = out Bool()
@@ -210,6 +213,23 @@ case class MyTopLevelIo(
   //val led3_b = out Bool()
   //val led3_g = out Bool()
   //val led3_r = out Bool()
+
+  val ck_io26 = out Bool()
+  //val ck_io27 = out Bool()
+  //val ck_io28 = out Bool()
+  //val ck_io29 = out Bool()
+  //val ck_io30 = out Bool()
+  //val ck_io31 = out Bool()
+  //val ck_io32 = out Bool()
+  //val ck_io33 = out Bool()
+  //val ck_io34 = out Bool()
+  //val ck_io35 = out Bool()
+  //val ck_io36 = out Bool()
+  //val ck_io37 = out Bool()
+  //val ck_io38 = out Bool()
+  //val ck_io39 = out Bool()
+  //val ck_io40 = out Bool()
+  //val ck_io41 = out Bool()
 }
 //case class DbgArrElem() extends Bundle {
 //  val ctrlPushValid = Bool()
@@ -238,6 +258,106 @@ case class DbgArrElem() extends Bundle {
   val snesCtrl_latch = Bool()
   val snesCtrl_data = Bool()
   val readerState = SnesCtrlReaderState()
+}
+case class MyTopLevelSnowHouseCpu(
+) extends Component {
+  
+  //Config.spinal.generateVerilog({
+  //  //val cfg = SnowHouseCpuConfig(
+  //  //  optFormal=(
+  //  //    false
+  //  //  )
+  //  //)
+  //})
+  //val io: MyTopLevelIo = new MyTopLevelIo(
+  //  optIncludeSnesCtrl=true
+  //)
+  val io = new Bundle {
+    val snesCtrl = master(SnesCtrlIo())
+    val ck_io26 = out Bool()
+  }
+  def coreClkRate = (
+    //125.0 MHz
+    130.0 MHz
+  )
+  val clkCtrl = new Area {
+    val coreClkWiz = new my_core_clk_wiz
+    coreClkWiz.io.clk_in1_0 := clockDomain.readClockWire
+    // Create a new clock domain named "core"
+    val coreClockDomain = ClockDomain.internal(
+      name="core",
+      config=ClockDomainConfig(
+        //resetActiveLevel = HIGH
+        resetKind=SYNC,
+      ),
+      //withReset=false,
+      frequency=FixedFrequency(coreClkRate)
+    )
+    //val tempRst = (pllRstCnt =/= 0)
+
+    //coreClockDomain.reset := ResetCtrl.asyncAssertSyncDeassert(
+    //  //input=io.rst || !pll.io.locked,
+    //  //input=(!pll.io.locked),
+    //  //input=(pllRstCnt =/= 0) || !pll.io.locked,
+    //  input=tempRst || !pll.io.locked,
+    //  clockDomain=coreClockDomain,
+    //)
+    coreClockDomain.reset := clockDomain.readResetWire
+    // Drive clock and reset of the `coreClockDomain` previously created
+    coreClockDomain.clock := coreClkWiz.io.clk_out1_0
+  }
+  val core = new ClockingArea(clkCtrl.coreClockDomain) {
+    val cfg = SnowHouseCpuConfig(
+      optFormal=(
+        //true
+        false
+      ),
+      exposeModMemWordToIo=true,
+    )
+    val testProgram = SnowHouseCpuTestProgram(cfg=cfg)
+    val myDut = SnowHouseCpuWithDualRam(program=testProgram.program)
+    //for (idx <- 0 until io.ja.getWidth + io.jb.getWidth) {
+    //  if (idx < io.ja.getWidth) {
+    //    io.ja(idx) := myDut.io.modMemWord(idx)
+    //  } else {
+    //    io.jb(idx - io.ja.getWidth) := myDut.io.modMemWord(idx)
+    //  }
+    //}
+    //io.outpVgaColR(0) := myDut.io.modMemWord(16)
+    //io.outpVgaColR(1) := myDut.io.modMemWord(17)
+    //io.outpVgaColR(2) := myDut.io.modMemWord(18)
+    //io.outpVgaColR(3) := myDut.io.modMemWord(19)
+    //io.outpVgaColG(0) := myDut.io.modMemWord(20)
+    //io.outpVgaColG(1) := myDut.io.modMemWord(21)
+    //io.outpVgaColG(2) := myDut.io.modMemWord(22)
+    //io.outpVgaColG(3) := myDut.io.modMemWord(23)
+    //io.outpVgaColB(0) := myDut.io.modMemWord(24)
+    //io.outpVgaColB(1) := myDut.io.modMemWord(25)
+    //io.outpVgaColB(2) := myDut.io.modMemWord(26)
+    //io.outpVgaColB(3) := myDut.io.modMemWord(27)
+    //io.outpVgaHsync := myDut.io.modMemWord(28)
+    //io.outpVgaVsync := myDut.io.modMemWord(29)
+    io.snesCtrl.outpClk := (
+      RegNext(RegNext(myDut.io.modMemWord(30)))
+      init(False)
+    )
+    io.snesCtrl.outpLatch := (
+      RegNext(RegNext(myDut.io.modMemWord(31)))
+      init(False)
+    )
+    myDut.io.idsIraIrq.nextValid := (
+      RegNext(RegNext(io.snesCtrl.inpData))
+      init(False)
+    )
+    io.ck_io26 := (
+      // myDut.io.modMemWord(23)
+      RegNext(RegNext(myDut.io.idsIraIrq.ready))
+      init(False)
+    )
+  }
+}
+object MyTopLevelSnowHouseCpuToVerilog extends App {
+  MyConfig.spinal.generateVerilog(MyTopLevelSnowHouseCpu())
 }
 case class MyTopLevel(
   //rgbConfig: RgbConfig=RgbConfig(rWidth=4, gWidth=4, bWidth=4),
@@ -381,7 +501,7 @@ case class MyTopLevel(
     //x=log2Up(2),
     //y=log2Up(2),
   )
-  def gpu2dParams = DefaultGpu2dParams(
+  def gpu2dCfg = DefaultGpu2dConfig(
     rgbConfig=MyTopLevelIo.physRgbConfig,
     intnlFbSize2d=gpu2dIntnlFbSize2d,
     physFbSize2dScale=gpu2dPhysFbSize2dScale,
@@ -633,14 +753,14 @@ case class MyTopLevel(
     val vgaCtrlFifoDepth = 10
     //--------
 
-    ////val myGpuToVgaFifoPush = Stream(Rgb(c=gpu2dParams.rgbConfig))
+    ////val myGpuToVgaFifoPush = Stream(Rgb(c=gpu2dCfg.rgbConfig))
     ////val myGpuToVgaFifoPop = cloneOf(myGpuToVgaFifoPush)
     //////val myGpuToVgaFifoPush = cloneOf(myGpuToVgaFifoPushFinal)
     //////val myGpuToVgaFifoPop = cloneOf(myGpuToVgaFifoPopFinal)
 
-    ////val myGpuPopStm = Stream(Rgb(c=gpu2dParams.rgbConfig))
+    ////val myGpuPopStm = Stream(Rgb(c=gpu2dCfg.rgbConfig))
     //val gpuToVgaFifoCC = StreamFifoCC(
-    //  dataType=Rgb(c=gpu2dParams.rgbConfig),
+    //  dataType=Rgb(c=gpu2dCfg.rgbConfig),
     //  //push=myGpuToVgaFifoPush,
     //  //pop=myGpuToVgaFifoPop,
     //  depth=128,
@@ -723,7 +843,7 @@ case class MyTopLevel(
   // `clkCtrl.coreClockDomain` 
   val core = new ClockingArea(clkCtrl.coreClockDomain) {
     ////val gpuToVgaFifo = StreamFifo(
-    ////  dataType=Rgb(c=gpu2dParams.rgbConfig),
+    ////  dataType=Rgb(c=gpu2dCfg.rgbConfig),
     ////  //push=myGpuToVgaFifoPush,
     ////  //pop=myGpuToVgaFifoPop,
     ////  depth=16,
@@ -761,7 +881,7 @@ case class MyTopLevel(
     ////vgaCtrl.io.push <-/< clkCtrl.gpuToVgaFifoCC.io.pop
     ////--------
     ////val vgaCtrl = VgaCtrl(
-    ////  rgbConfig=gpu2dParams.rgbConfig,
+    ////  rgbConfig=gpu2dCfg.rgbConfig,
     ////)
     ////--------
     ////val myVpipeSPipe2Stm = (
@@ -790,13 +910,13 @@ case class MyTopLevel(
     //  false
     //)
     //val gpu2d = Gpu2d(
-    //  params=gpu2dParams,
+    //  cfg=gpu2dCfg,
     //  //inVivado=true,
     //  dbgPipeMemRmw=dbgPipeMemRmw,
     //)
     //val gpu2dTest = Gpu2dTest(
     //  clkRate=coreClkRate,
-    //  params=gpu2dParams,
+    //  cfg=gpu2dCfg,
     //  dbgPipeMemRmw=dbgPipeMemRmw,
     //  optRawSnesButtons=false,
     //)
@@ -1017,7 +1137,7 @@ case class MyTopLevel(
     ////vgaCtrl.io.pixels <-/< myGpuPopStm
     ////--------
     //val gpu2dBlanking = Gpu2dBlanking(
-    //  params=gpu2dParams,
+    //  cfg=gpu2dCfg,
     //  vgaTimingInfo=vgaTimingInfo,
     //)
     //myGpuPopStm.translateInto(
@@ -1055,9 +1175,9 @@ case class MyTopLevel(
     ////io.outpVga := vgaCtrl.io.phys
     val myDut = Gpu2dSimDut(
       clkRate=coreClkRate,
-      rgbConfig=gpu2dParams.rgbConfig,
+      rgbConfig=gpu2dCfg.rgbConfig,
       vgaTimingInfo=vgaTimingInfo,
-      gpu2dParams=gpu2dParams,
+      gpu2dCfg=gpu2dCfg,
       ctrlFifoDepth=clkCtrl.vgaCtrlFifoDepth,
       optRawSnesButtons=false,
       dbgPipeMemRmw=false,
@@ -1104,10 +1224,14 @@ object MyConfig {
   def spinal = SpinalConfig(
     targetDirectory="hw/gen",
     defaultConfigForClockDomains=ClockDomainConfig(
-      //resetActiveLevel=HIGH,
-      resetKind=BOOT,
+      resetActiveLevel=HIGH,
+      resetKind=(
+        BOOT
+        //SYNC
+      ),
     ),
-    onlyStdLogicVectorAtTopLevelIo=true,
+    //onlyStdLogicVectorAtTopLevelIo=true,
+    //verbose=true,
   )
     //.addStandardMemBlackboxing(blackboxAll)
 }

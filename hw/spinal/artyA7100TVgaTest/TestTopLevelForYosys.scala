@@ -11,6 +11,7 @@ import libcheesevoyage.general._
 import libcheesevoyage.gfx._
 import libcheesevoyage.hwdev._
 import scala.collection.mutable.ArrayBuffer
+import libcheesevoyage.gfx.Gpu2dTestGfx
 
 object MyTopLevelForYosysIo {
   //def physRgbConfig = RgbConfig(rWidth=4, gWidth=4, bWidth=4)
@@ -161,7 +162,7 @@ case class MyTopLevelForYosys(
   //val vgaTimingInfo = LcvVgaTimingInfoMap.map("1600x900@60")
   //val vgaTimingInfo = LcvVgaTimingInfoMap.map("1920x1080@60")
   def vivadoDebug = true
-  //def gpu2dParams = DefaultGpu2dParams(
+  //def gpu2dCfg = DefaultGpu2dConfig(
   //  //rgbConfig=rgbConfig,
   //  rgbConfig=MyTopLevelIo.physRgbConfig,
   //  intnlFbSize2d=ElabVec2[Int](
@@ -256,7 +257,7 @@ case class MyTopLevelForYosys(
     //x=log2Up(2),
     //y=log2Up(2),
   )
-  def gpu2dParams = DefaultGpu2dParams(
+  def gpu2dCfg = DefaultGpu2dConfig(
     rgbConfig=MyTopLevelIo.physRgbConfig,
     intnlFbSize2d=ElabVec2[Int](
       x=vgaTimingInfo.fbSize2d.x,
@@ -433,12 +434,12 @@ case class MyTopLevelForYosys(
     //--------
     // BEGIN: later
     val gpu2d = Gpu2d(
-      params=gpu2dParams,
+      cfg=gpu2dCfg,
       //inVivado=true,
     )
     val gpu2dTest = Gpu2dTest(
       clkRate=clkRate,
-      params=gpu2dParams,
+      cfg=gpu2dCfg,
     )
     //val vidDith = LcvVideoDitherer(
     //  //fbSize2d=ElabVec2(x=640, y=480),
@@ -544,7 +545,9 @@ case class MyTopLevelForYosys(
     //--------
     // BEGIN: later
     ctrlIo.push.valid := gpuIo.pop.valid
-    ctrlIo.push.payload := gpuIo.pop.payload.col
+    ctrlIo.push.payload.r := gpuIo.pop.payload.col.r
+    ctrlIo.push.payload.g := gpuIo.pop.payload.col.g
+    ctrlIo.push.payload.b := gpuIo.pop.payload.col.b
     gpuIo.pop.ready := ctrlIo.push.ready
     // END: later
     //--------
