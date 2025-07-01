@@ -278,7 +278,9 @@ case class MyTopLevelSnowHouseCpu(
   }
   def coreClkRate = (
     //125.0 MHz
-    130.0 MHz
+    //130.0 MHz
+    //145.0 MHz
+    150.0 MHz
   )
   val clkCtrl = new Area {
     val coreClkWiz = new my_core_clk_wiz
@@ -312,7 +314,10 @@ case class MyTopLevelSnowHouseCpu(
         //true
         false
       ),
-      exposeModMemWordToIo=true,
+      instrRamKind=0,
+      programStr="test/snowhousecpu-test-5.bin",
+      exposeRegFileWriteDataToIo=true,
+      //regFileMemRamStyle="block",
     )
     val testProgram = SnowHouseCpuTestProgram(cfg=cfg)
     val myDut = SnowHouseCpuWithDualRam(program=testProgram.program)
@@ -338,11 +343,11 @@ case class MyTopLevelSnowHouseCpu(
     //io.outpVgaHsync := myDut.io.modMemWord(28)
     //io.outpVgaVsync := myDut.io.modMemWord(29)
     io.snesCtrl.outpClk := (
-      RegNext(RegNext(myDut.io.modMemWord(30)))
+      RegNext(RegNext(myDut.io.regFileWriteData(30)))
       init(False)
     )
     io.snesCtrl.outpLatch := (
-      RegNext(RegNext(myDut.io.modMemWord(31)))
+      RegNext(RegNext(myDut.io.regFileWriteData(31)))
       init(False)
     )
     myDut.io.idsIraIrq.nextValid := (
