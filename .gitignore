@@ -47,5 +47,8 @@ tmp/
 null
 
 xilinx/
+*.jou
+.Xil/
 
 .nvim/
+hw/gen/
